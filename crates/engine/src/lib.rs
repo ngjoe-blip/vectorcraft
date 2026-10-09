@@ -1628,6 +1628,8 @@ mod tests_typearea;
 #[cfg(test)]
 mod tests_units;
 #[cfg(test)]
+mod tests_variables;
+#[cfg(test)]
 mod tests_webexport;
 #[cfg(test)]
 mod tests_widthpoints;
