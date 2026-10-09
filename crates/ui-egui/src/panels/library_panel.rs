@@ -618,6 +618,47 @@ mod tests {
     }
 
     #[test]
+    fn the_save_dialog_writes_swatch_exchange_files() {
+        let written = std::rc::Rc::new(std::cell::RefCell::new(vec![]));
+        let w = written.clone();
+        let services = crate::Services {
+            pick_save: Some(Box::new(|p: &crate::FilePick| Some(format!("/tmp/{}", p.name)))),
+            write: Some(Box::new(move |p: &str, b: &[u8]| {
+                w.borrow_mut().push((p.to_string(), b.to_vec()));
+                Ok(())
+            })),
+            ..Default::default()
+        };
+        let mut app = VectorcraftApp::new(Session::new(), services);
+        app.run("file.new", json!({"width": 100, "height": 100})).unwrap();
+        app.run("ui.saveSwatchLibrary", json!({})).unwrap();
+        let d = app.ui.dialog.as_mut().unwrap();
+        d.fields.insert("format".into(), json!("ase"));
+        d.fields.insert("name".into(), json!("Brand Kit"));
+        let text = crate::tests_labels::painted_text(&mut app, |app, ui| crate::dialogs::show(app, ui.ctx()));
+        assert!(text.contains("Swatch Exchange (.ase)") && text.contains("Swatch exchange files keep solid colors only."), "{text}");
+        crate::dialogs::confirm(&mut app).unwrap();
+        let (path, bytes) = written.borrow()[0].clone();
+        assert_eq!(path, "/tmp/Brand Kit.ase", "the save panel suggests the name");
+        let lib = vectorcraft_color::palette_io::read_bytes(&bytes, "x").unwrap();
+        let solid = app.session.doc().unwrap().doc.swatches_iter().filter(|w| w.paint.color().is_some()).count();
+        assert_eq!(lib.len(), solid, "every solid color of the document");
+        // The web downloads the file under that name.
+        let downloads = std::rc::Rc::new(std::cell::RefCell::new(vec![]));
+        let dl = downloads.clone();
+        let services =
+            crate::Services { download: Some(Box::new(move |name: &str, _: &[u8]| dl.borrow_mut().push(name.to_string()))), ..Default::default() };
+        let mut web = VectorcraftApp::new(Session::new(), services);
+        web.run("file.new", json!({"width": 100, "height": 100})).unwrap();
+        web.run("ui.saveSwatchLibrary", json!({})).unwrap();
+        let d = web.ui.dialog.as_mut().unwrap();
+        d.fields.insert("format".into(), json!("ase"));
+        d.fields.insert("name".into(), json!(" Brand: Kit. "));
+        crate::dialogs::confirm(&mut web).unwrap();
+        assert_eq!(*downloads.borrow(), ["Brand- Kit.ase"], "the name made safe as a file name, as for User Defined");
+    }
+
+    #[test]
     fn swatch_exchange_files_without_a_path_open_in_the_library_panel() {
         // A file opened on the web has no path; open_bytes passes its bytes as dataBase64.
         let mut app = app();
@@ -627,5 +668,59 @@ mod tests {
         let (_, lib) = SwatchLibraries::get(&app, &open.id).unwrap();
         assert_eq!((lib.len(), lib.groups.len()), (4, 1));
         assert_eq!(app.session.documents().len(), 1, "not opened as a document");
+    }
+
+    #[test]
+    fn a_library_from_another_folder_is_offered_a_copy_in_user_defined() {
+        let dir = std::env::temp_dir().join(format!("vc-library-copy-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let (user, elsewhere) = (dir.join("user"), dir.join("elsewhere"));
+        std::fs::create_dir_all(&elsewhere).unwrap();
+        let source = elsewhere.join("Brand.ase");
+        std::fs::write(&source, vectorcraft_testkit::ase::sample()).unwrap();
+        let source = source.to_string_lossy().to_string();
+        let mut app = app();
+        app.services.read = Some(Box::new(|p: &str| std::fs::read(p).map_err(|e| e.to_string())));
+        app.session.swatch_libraries.set_user_dir(Some(user.to_string_lossy().to_string()));
+        crate::io::open_path(&mut app, &source).unwrap();
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.clone()), Some(format!("loaded/{source}")));
+        let d = app.ui.dialog.as_ref().expect("opening it asks");
+        assert_eq!((d.kind.as_str(), d.str("__command").as_str()), (crate::dialogs::confirm::KIND, "window.swatchLibrary.copyToUser"));
+        assert_eq!(d.str("message"), "Copy “Brand” to the User Defined libraries?");
+        assert!(crate::menus::enabled(&app, "window.swatchLibrary.copyToUser"));
+        // A Color Guide limited to the loaded library is limited to the copy.
+        app.run("ui.colorGuideLimit", json!({ "library": format!("loaded/{source}") })).unwrap();
+        crate::dialogs::confirm(&mut app).unwrap();
+        assert!(app.ui.dialog.is_none());
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.as_str()), Some("user/Brand.ase"), "the panel shows the copy");
+        assert_eq!(std::fs::read(user.join("Brand.ase")).unwrap(), vectorcraft_testkit::ase::sample());
+        assert_eq!(app.ui.status, "Saved to User Defined: Brand");
+        assert_eq!(app.ui.color_guide_limit, "user/Brand.ase");
+        assert!(vectorcraft_engine::cmd::swatchlib::limit_palette(&app.session, &app.ui.color_guide_limit).is_some());
+        // A file of the User Defined folder opens as its User Defined library without a question.
+        crate::io::open_path(&mut app, &user.join("Brand.ase").to_string_lossy()).unwrap();
+        assert!(app.ui.dialog.is_none());
+        // So does the source, which has the same bytes.
+        app.run("window.swatchLibrary.other", json!({ "path": source })).unwrap();
+        assert!(app.ui.dialog.is_none());
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.as_str()), Some("user/Brand.ase"));
+        // Copying a User Defined library writes nothing, and the status bar reads Already in User Defined.
+        app.run("window.swatchLibrary.copyToUser", json!({ "library": "user/Brand.ase" })).unwrap();
+        assert_eq!(app.ui.status, "Already in User Defined: Brand");
+        // The app asks about a file with other bytes; Cancel keeps it loaded until the app quits.
+        let other = elsewhere.join("Other.ase");
+        let block = vectorcraft_testkit::ase::Block::Color("Only", b"RGB ", &[1.0, 0.0, 0.0], 2);
+        std::fs::write(&other, vectorcraft_testkit::ase::ase(&[block])).unwrap();
+        let other = other.to_string_lossy().to_string();
+        app.run("window.swatchLibrary.other", json!({ "path": other })).unwrap();
+        assert_eq!(app.ui.dialog.as_ref().map(|d| d.kind.as_str()), Some(crate::dialogs::confirm::KIND));
+        crate::dialogs::cancel(&mut app);
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.clone()), Some(format!("loaded/{other}")));
+        // Without a User Defined folder (the web) nothing is asked, and the command is off.
+        app.session.swatch_libraries.set_user_dir(None);
+        crate::io::open_path(&mut app, &source).unwrap();
+        assert!(app.ui.dialog.is_none());
+        assert!(!crate::menus::enabled(&app, "window.swatchLibrary.copyToUser"));
+        let _ = std::fs::remove_dir_all(dir);
     }
 }

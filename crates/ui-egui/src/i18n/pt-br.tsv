@@ -480,6 +480,8 @@
 	Copy Color Value (Hex)	Copiar Valor da Cor (Hex)
 	Copy Selected Style	Copiar Estilo Selecionado
 	Copy Width Point	Copiar Ponto de Largura
+	Copy to User Defined	Copiar para Definido pelo Usuário
+	Copy “{name}” to the User Defined libraries?	Copiar “{name}” para as Bibliotecas Definidas pelo Usuário?
 	Copyright	Direitos Autorais
 	Copyright Info URL:	URL de Informações de Direitos Autorais:
 	Copyright Notice:	Aviso de Direitos Autorais:
@@ -2297,6 +2299,7 @@
 	Swatch Options	Opções de Amostra
 	Swatch Options…	Opções de Amostra…
 	Swatch Tiles	Blocos de Amostra
+	Swatch exchange files keep solid colors only.	Arquivos de intercâmbio de amostras mantêm apenas cores sólidas.
 	Swatches	Amostras
 	Switch workspace	Trocar espaço de trabalho
 	Symbol Instance	Instância de Símbolo
@@ -2510,6 +2513,7 @@
 	Vector illustration — fast, open, scriptable.	Ilustração vetorial — rápida, aberta, scriptável.
 	VectorCraft Help…	Ajuda do VectorCraft…
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	O VectorCraft não fechou normalmente da última vez. Estes documentos tinham alterações não salvas:
+	VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.	O VectorCraft lista as Bibliotecas Definidas pelo Usuário sempre que é iniciado. Uma biblioteca de outra pasta fica listada até o VectorCraft ser fechado.
 	VectorCraft on GitHub	VectorCraft no GitHub
 	VectorCraft on getartcraft.com	VectorCraft em getartcraft.com
 	Vectors	Vetores

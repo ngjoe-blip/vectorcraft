@@ -476,7 +476,9 @@
 	Copy Fonts Used in the Document	复制文档中使用的字体
 	Copy Links	复制链接
 	Copy Selected Style	复制所选样式
+	Copy to User Defined	复制到用户定义
 	Copy Width Point	复制宽度点
+	Copy “{name}” to the User Defined libraries?	要将“{name}”复制到用户定义的库吗？
 	Copyright	版权
 	Copyright Info URL:	版权信息 URL：
 	Copyright Notice:	版权声明：
@@ -2556,6 +2558,7 @@
 	Swash	花饰字
 	Swatch Conflict	色板冲突
 	Swatch Conflicts	色板冲突
+	Swatch exchange files keep solid colors only.	色板交换文件仅保留纯色。
 	Swatch Libraries	色板库
 	Swatch Libraries Menu	色板库菜单
 	Swatch Library	色板库
@@ -2833,6 +2836,7 @@
 	VectorCraft	VectorCraft
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft 上次未正常退出。以下文档有未存储的更改：
 	VectorCraft Help…	VectorCraft 说明…
+	VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.	VectorCraft 每次启动时都会列出用户定义的库。其他文件夹中的库只会列到 VectorCraft 退出为止。
 	VectorCraft on getartcraft.com	getartcraft.com 上的 VectorCraft
 	VectorCraft on GitHub	GitHub 上的 VectorCraft
 	Vectors	矢量

@@ -1115,10 +1115,54 @@ pub(crate) fn open_library(app: &mut VectorcraftApp, p: &Value) -> Result<Value,
     })
 }
 
-/// `swatch.library.load` params, then open the library in the panel.
+/// `swatch.library.load` params, then open the library in the panel. When the library comes from a
+/// folder other than the User Defined one, [`offer_copy`] asks whether to copy it there.
 pub(crate) fn load_library(app: &mut VectorcraftApp, params: Value) -> Result<Value, String> {
     let r = app.run("swatch.library.load", params)?;
-    open_library(app, &json!({ "library": r["library"] }))
+    let opened = open_library(app, &json!({ "library": r["library"] }))?;
+    offer_copy(app, &r);
+    Ok(opened)
+}
+
+/// Ask whether to copy the library `swatch.library.load` just loaded (its result `r`) into the
+/// User Defined folder; OK runs `window.swatchLibrary.copyToUser`. A file of the User Defined
+/// folder, or a file with the same extension and bytes as one there, opens as that User Defined
+/// library and isn't asked about. Nothing is asked without a User Defined folder (the web) or while
+/// another dialog is open.
+fn offer_copy(app: &mut VectorcraftApp, r: &Value) {
+    let Some(id) = r["library"].as_str().filter(|id| id.starts_with("loaded/")) else { return };
+    if app.session.swatch_libraries.user_dir().is_none() || app.ui.dialog.is_some() {
+        return;
+    }
+    let name = r["name"].as_str().unwrap_or_default();
+    let message = crate::i18n::fmt(tl!("Copy “{name}” to the User Defined libraries?"), &[("name", name)]);
+    let detail = tl!("VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.");
+    crate::dialogs::confirm::ask(app, &message, detail, "window.swatchLibrary.copyToUser", json!({ "library": id }));
+}
+
+/// `window.swatchLibrary.copyToUser {library?}`: copy a loaded swatch library (default: the one
+/// open in the library panel) into the User Defined folder (`swatch.library.copyToUser`). A library
+/// panel that showed it shows the User Defined library instead, and a Color Guide limited to it is
+/// limited to the User Defined library.
+pub(crate) fn copy_to_user(app: &mut VectorcraftApp, p: &Value) -> Result<Value, String> {
+    let open = app.ui.library_panel.as_ref().filter(|o| o.kind == SwatchLibraries::KIND).map(|o| o.id.clone());
+    let library = p.get("library").filter(|v| !v.is_null()).cloned().or_else(|| open.clone().map(Value::String)).unwrap_or(Value::Null);
+    let before = library.as_str().and_then(|key| swatchlib::library(&app.session, key)).map(|(info, _)| info.id);
+    let r = app.run("swatch.library.copyToUser", json!({ "library": library }))?;
+    if before.is_some() && open == before {
+        open_library(app, &json!({ "library": r["library"] }))?;
+    }
+    if let Some(user) = r["library"].as_str()
+        && before.as_deref() == Some(app.ui.color_guide_limit.as_str())
+    {
+        app.ui.color_guide_limit = user.to_string();
+    }
+    if r["copied"].as_bool() == Some(true) {
+        app.status(format!("Saved to User Defined: {}", r["name"].as_str().unwrap_or_default()));
+    } else {
+        app.status(format!("Already in User Defined: {}", r["name"].as_str().unwrap_or_default()));
+    }
+    Ok(r)
 }
 
 /// Other Library…: load the library (or document) at `path`, else one picked in an open dialog

@@ -490,7 +490,9 @@
 	Copy Fonts Used in the Document	複製文件中使用的字體
 	Copy Links	複製連結
 	Copy Selected Style	複製所選樣式
+	Copy to User Defined	複製到使用者定義
 	Copy Width Point	複製寬度點
+	Copy “{name}” to the User Defined libraries?	要將「{name}」複製到使用者定義資料庫嗎？
 	Copyright	版權
 	Copyright Info URL:	著作權資訊網址：
 	Copyright Notice:	著作權聲明：
@@ -2642,6 +2644,7 @@
 	Swash	花體字
 	Swatch Conflict	色票衝突
 	Swatch Conflicts	色票衝突
+	Swatch exchange files keep solid colors only.	色票交換檔案僅保留純色。
 	Swatch Libraries	色票資料庫
 	Swatch Libraries Menu	色票資料庫選單
 	Swatch Library	色票資料庫
@@ -2921,6 +2924,7 @@
 	VectorCraft	VectorCraft
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft 上次未正常結束。下列文件有未儲存的變更：
 	VectorCraft Help…	VectorCraft 說明…
+	VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.	VectorCraft 每次啟動時都會列出使用者定義資料庫。其他資料夾中的資料庫只會列到 VectorCraft 結束為止。
 	VectorCraft on getartcraft.com	getartcraft.com 上的 VectorCraft
 	VectorCraft on GitHub	GitHub 上的 VectorCraft
 	Vectors	向量
