@@ -50,6 +50,17 @@ fn font_ext(bytes: &[u8]) -> &'static str {
     }
 }
 
+/// The name a font's file gets in the package's `Fonts` folder: the name of the file at `path`,
+/// with the extension the font's `data` calls for ([`font_ext`]) when that name has no font
+/// extension; without a file, `family-style` with that extension.
+fn packaged_name(path: Option<&Path>, family: &str, style: &str, data: &[u8]) -> String {
+    match path.and_then(Path::file_name).map(|n| n.to_string_lossy().into_owned()) {
+        Some(name) if vectorcraft_text::is_font_file(Path::new(&name)) => name,
+        Some(name) => format!("{name}.{}", font_ext(data)),
+        None => format!("{family}-{style}.{}", font_ext(data)).replace(|c: char| !(c.is_alphanumeric() || "-_.".contains(c)), ""),
+    }
+}
+
 /// The options of a package.
 struct Options {
     copy_links: bool,
@@ -109,25 +120,29 @@ fn package(s: &mut Session, p: &Value) -> Result<Value> {
         lines.push("FONTS".to_string());
         for (family, style) in super::fonts::used_fonts(&st.doc) {
             let font = format!("{family} {style}");
-            let reason = match db.face(&family, &style) {
-                Some(f) if f.family.eq_ignore_ascii_case(&family) && f.embeddable() => {
+            // Found by any of its names, as the canvas draws it.
+            let resolved = db.resolve(&family, &style).filter(|(_, m)| *m != vectorcraft_text::FontMatch::Missing);
+            // A style the family lacks is shown in its closest style, whose file is copied.
+            let shown = match &resolved {
+                Some((f, vectorcraft_text::FontMatch::Style)) => format!(" (shown in {} {})", f.family, f.style),
+                _ => String::new(),
+            };
+            let reason = match resolved {
+                Some((f, _)) if f.embeddable() => {
                     let data = f.file_data();
-                    let file = f.path().and_then(Path::file_name).map_or_else(
-                        || format!("{}-{}.{}", f.family, f.style, font_ext(data)).replace(|c: char| !(c.is_alphanumeric() || "-_.".contains(c)), ""),
-                        |n| n.to_string_lossy().into_owned(),
-                    );
+                    let file = packaged_name(f.path(), &f.family, &f.style, data);
                     // A collection, or a style shown in another face's file, is copied once.
                     if files.insert(file.to_lowercase()) {
                         entries.push((format!("Fonts/{file}"), data.to_vec()));
                         fonts += 1;
                     }
-                    lines.push(format!("{font} → Fonts/{file}"));
+                    lines.push(format!("{font}{shown} → Fonts/{file}"));
                     continue;
                 }
-                Some(f) if f.family.eq_ignore_ascii_case(&family) => "its licence doesn't allow embedding",
-                _ => "not available on this computer",
+                Some(_) => "its licence doesn't allow embedding",
+                None => "not available on this computer",
             };
-            lines.push(format!("{font}: {reason}, not copied"));
+            lines.push(format!("{font}{shown}: {reason}, not copied"));
             skipped.push(json!({ "font": font, "reason": reason }));
         }
         lines.push(String::new());
@@ -246,4 +261,22 @@ pub(crate) fn zip(files: &[(String, &[u8])]) -> Result<Vec<u8>> {
     out.extend_from_slice(&start.to_le_bytes());
     out.extend_from_slice(&0u16.to_le_bytes());
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A font read from a file without a font extension (one a font manager keeps, for example) is
+    /// packaged with the extension its data calls for.
+    #[test]
+    fn packaged_fonts_have_a_font_extension() {
+        let (otf, ttc, ttf) = (b"OTTO....".as_slice(), b"ttcf....".as_slice(), b"\0\x01\0\0....".as_slice());
+        let name = |path: Option<&str>, data: &[u8]| packaged_name(path.map(Path::new), "Some Family", "Bold", data);
+        assert_eq!(name(Some("/fonts/A8F3C2"), otf), "A8F3C2.otf");
+        assert_eq!(name(Some("/fonts/Shared Fonts.dat"), ttc), "Shared Fonts.dat.ttc");
+        assert_eq!(name(Some("/fonts/Kept.TTF"), otf), "Kept.TTF");
+        assert_eq!(name(Some("/fonts/Kept.otc"), ttc), "Kept.otc");
+        assert_eq!(name(None, ttf), "SomeFamily-Bold.ttf");
+    }
 }
