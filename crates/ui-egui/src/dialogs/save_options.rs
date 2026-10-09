@@ -330,7 +330,11 @@ mod tests {
     #[test]
     fn save_a_copy_and_template_suggest_their_names() {
         let (mut app, written, picks) = desktop("copy.vectorcraft");
-        app.session.prefs.templates_folder = "/templates".into();
+        // A folder the test can make: the dialog starts in the Templates folder (made when it's
+        // missing), else in the nearest folder above it that exists, which for one in `/` is `/`.
+        let templates = std::env::temp_dir().join(format!("vc-templates-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&templates);
+        app.session.prefs.templates_folder = templates.to_string_lossy().into_owned();
         app.run("file.saveCopy", json!({})).unwrap();
         assert_eq!(picks.borrow()[0].name, "Untitled-1 copy.vectorcraft");
         assert!(app.ui.dialog.is_none(), "the native format has no options");
@@ -338,9 +342,11 @@ mod tests {
         assert!(app.session.active().unwrap().path.is_none() && app.session.active().unwrap().is_dirty());
         app.run("file.saveAsTemplate", json!({})).unwrap();
         let pick = &picks.borrow()[1];
-        assert_eq!((pick.name.as_str(), pick.folder.as_deref()), ("Untitled-1 template.vctemplate", Some("/templates")));
+        assert_eq!((pick.name.as_str(), pick.folder.as_deref()), ("Untitled-1 template.vctemplate", templates.to_str()));
+        assert!(templates.is_dir(), "the dialog's folder is made");
         assert_eq!(pick.filters, [("VectorCraft Template", &["vctemplate"][..])]);
         assert_eq!(written.borrow()[1].0, "copy.vectorcraft", "the picked name is kept");
+        let _ = std::fs::remove_dir_all(&templates);
     }
 
     #[test]
