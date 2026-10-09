@@ -490,7 +490,9 @@
 	Copy Fonts Used in the Document	Копировать шрифты, использованные в документе
 	Copy Links	Копировать связи
 	Copy Selected Style	Копировать выбранный стиль
+	Copy to User Defined	Копировать в «Пользовательский»
 	Copy Width Point	Копировать точку ширины
+	Copy “{name}” to the User Defined libraries?	Скопировать «{name}» в пользовательские библиотеки?
 	Copyright	Copyright
 	Copyright Info URL:	URL информации об авторских правах:
 	Copyright Notice:	Уведомление об авторских правах:
@@ -2893,6 +2895,7 @@
 	Vector illustration — fast, open, scriptable.	Векторная иллюстрация — быстрая, открытая, программируемая.
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft не завершился нормально в прошлый раз. В этих документах были несохранённые изменения:
 	VectorCraft Help…	Справка VectorCraft…
+	VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.	VectorCraft показывает пользовательские библиотеки при каждом запуске. Библиотека из другой папки показывается до выхода из VectorCraft.
 	VectorCraft on getartcraft.com	VectorCraft на getartcraft.com
 	VectorCraft on GitHub	VectorCraft на GitHub
 	Vectors	Векторы
@@ -3142,6 +3145,7 @@ axis	Both	Оба
 @msg	its page has text, and its layers have no text objects to put it in	на его странице есть текст, а на слоях нет текстовых объектов, куда его поместить
 @msg	the art on them differs from the page's in {_1}% of it	изображение на слоях отличается от изображения на странице на {_1} % площади
 @msg	`to` must be "corner" or "smooth"	`to` должно быть "corner" или "smooth"
+@msg	Already in User Defined: {_1}	Уже в «Пользовательский»: {_1}
 @msg	BMP files are RGB or grayscale: colorModel rgb or gray	файлы BMP бывают RGB или в оттенках серого: colorModel rgb или gray
 @msg	Blend colors: select at least three objects with filled colours	Смешивание цветов: выберите не менее трёх объектов с цветными заливками
 @msg	Combine Slices: the slices have no bounds	Объединение фрагментов: у фрагментов нет границ
@@ -3429,6 +3433,7 @@ axis	Both	Оба
 @msg	no symbol instances selected	экземпляры символов не выделены
 @msg	no target object has an opacity mask: select one or give `id`	ни у одного целевого объекта нет непрозрачной маски: выделите один или укажите `id`
 @msg	no threaded text selected	связанный текст не выделен
+@msg	no user library folder here	здесь нет папки пользовательских библиотек
 @msg	no user workspace `{from}`	нет пользовательской рабочей среды `{from}`
 @msg	node {_1} is not text	узел {_1} не является текстом
 @msg	not a DXF drawing	не является чертежом DXF

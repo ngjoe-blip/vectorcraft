@@ -492,7 +492,9 @@
 	Copy Fonts Used in the Document	Copia i font usati nel documento
 	Copy Links	Copia collegamenti
 	Copy Selected Style	Copia stile selezionato
+	Copy to User Defined	Copia in Definito dall'utente
 	Copy Width Point	Copia punto di larghezza
+	Copy “{name}” to the User Defined libraries?	Copiare “{name}” nelle librerie definite dall'utente?
 	Copyright	Copyright
 	Copyright Info URL:	URL informazioni copyright:
 	Copyright Notice:	Nota sul copyright:
@@ -2897,6 +2899,7 @@
 	Vector illustration — fast, open, scriptable.	Illustrazione vettoriale — veloce, aperta, programmabile.
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft non si è chiuso correttamente l'ultima volta. Questi documenti avevano modifiche non salvate:
 	VectorCraft Help…	Aiuto di VectorCraft…
+	VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.	VectorCraft elenca le librerie definite dall'utente a ogni avvio. Una libreria di un'altra cartella resta elencata fino alla chiusura di VectorCraft.
 	VectorCraft on getartcraft.com	VectorCraft su getartcraft.com
 	VectorCraft on GitHub	VectorCraft su GitHub
 	Vectors	Vettori
@@ -3146,6 +3149,7 @@ axis	Both	Entrambi
 @msg	its page has text, and its layers have no text objects to put it in	la sua pagina ha del testo e i suoi livelli non hanno oggetti di testo in cui metterlo
 @msg	the art on them differs from the page's in {_1}% of it	l'illustrazione dei livelli differisce da quella della pagina per il {_1}% della sua superficie
 @msg	`to` must be "corner" or "smooth"	`to` deve essere "corner" o "smooth"
+@msg	Already in User Defined: {_1}	Già in Definito dall'utente: {_1}
 @msg	BMP files are RGB or grayscale: colorModel rgb or gray	I file BMP sono RGB o in scala di grigi: colorModel rgb o gray
 @msg	Blend colors: select at least three objects with filled colours	Fondi colori: seleziona almeno tre oggetti con riempimento colore
 @msg	Combine Slices: the slices have no bounds	Combina sezioni: le sezioni non hanno limiti
@@ -3433,6 +3437,7 @@ axis	Both	Entrambi
 @msg	no symbol instances selected	nessuna istanza di simbolo selezionata
 @msg	no target object has an opacity mask: select one or give `id`	nessun oggetto di destinazione ha una maschera di opacità: selezionane uno o specifica `id`
 @msg	no threaded text selected	nessun testo concatenato selezionato
+@msg	no user library folder here	nessuna cartella di librerie utente qui
 @msg	no user workspace `{from}`	nessuna area di lavoro utente `{from}`
 @msg	node {_1} is not text	il nodo {_1} non è testo
 @msg	not a DXF drawing	non è un disegno DXF

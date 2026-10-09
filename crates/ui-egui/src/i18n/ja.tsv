@@ -976,7 +976,9 @@
 	Copy All Styles	すべてのスタイルをコピー
 	Copy Color Value (Hex)	カラー値をコピー (16 進)
 	Copy Selected Style	選択したスタイルをコピー
+	Copy to User Defined	ユーザー定義にコピー
 	Copy Width Point	幅ポイントをコピー
+	Copy “{name}” to the User Defined libraries?	「{name}」をユーザー定義ライブラリにコピーしますか？
 	Copyright	著作権
 	Copyright Info URL:	著作権情報の URL:
 	Copyright Notice:	著作権表示:
@@ -2588,6 +2590,7 @@
 	Vector Halftone	ベクトルハーフトーン
 	Vector illustration — fast, open, scriptable.	ベクターイラスト — 高速・オープン・スクリプト対応
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft は前回正常に終了しませんでした。次のドキュメントに未保存の変更があります:
+	VectorCraft lists User Defined libraries every time it starts. It lists a library from another folder until it quits.	VectorCraft は起動するたびにユーザー定義ライブラリを表示します。他のフォルダーのライブラリは VectorCraft を終了するまで表示されます。
 	Vectors	ベクター
 	Version {version} — open-source vector illustration in pure Rust.	バージョン {version} — Rust だけで書かれたオープンソースのベクターイラストアプリ。
 	Version:	バージョン:

@@ -154,7 +154,12 @@ Clicking a swatch there runs `swatch.library.add {library, names: [name], apply}
 one with Alt), so one undo step adds and applies it; Shift/Cmd-clicks select swatches and colour groups for
 Add to Swatches.
 `window.swatchLibrary.other {path?}` loads a library file (or another document's swatches) and opens it there;
-opening a `.vcswatches`, `.gpl` or `.ase` file with `app.open` does the same. `ui.saveSwatchLibrary {names?}` opens the
+opening a `.vcswatches`, `.gpl` or `.ase` file with `app.open` does the same. With a user library folder (the desktop
+app), the app then asks whether to copy a library from another folder there: a `confirm`
+dialog whose `ui.dialog.confirm` runs `window.swatchLibrary.copyToUser {library}` (engine:
+`swatch.library.copyToUser`) and shows the User Defined library in the panel; `ui.dialog.cancel`
+keeps it loaded until the app quits. A file with the same extension and bytes as a User Defined
+library opens as that library, without the question. `ui.saveSwatchLibrary {names?}` opens the
 `saveSwatchLibrary` dialog (fields `name`, `format`: `vcswatches`/`gpl`/`ase`/`css`, `user`: save to the user library
 folder, `selectedOnly` with `names`); `ui.dialog.confirm` runs `swatch.library.save` (to a file it asks for a path
 and suggests `name` with the format's extension as the file name; the web downloads the file under that name).

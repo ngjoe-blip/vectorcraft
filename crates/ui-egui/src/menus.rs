@@ -359,7 +359,13 @@ pub const UI_COMMANDS: &[(&str, &str, &str, &str)] = &[
         "window.swatchLibrary.other",
         "Other Library…",
         "",
-        "{path?} (default: pick a file) load a .vcswatches, .gpl or .ase library, or another document's swatches (engine: swatch.library.load), and open it in the library panel",
+        "{path?} (default: pick a file) load a .vcswatches, .gpl or .ase library, or another document's swatches (engine: swatch.library.load), and open it in the library panel; with a User Defined folder (the desktop app), the app then asks whether to copy a library from another folder there (dialog `confirm`, window.swatchLibrary.copyToUser)",
+    ),
+    (
+        "window.swatchLibrary.copyToUser",
+        "Copy to User Defined",
+        "",
+        "{library?: id or name of a loaded library (default: the one open in the library panel)} copy it into the User Defined folder (engine: swatch.library.copyToUser) and show the User Defined library in the library panel when the panel showed this one; a Color Guide limited to this one is limited to the User Defined library. Opening a library from another folder asks first: dialog `confirm`, whose OK runs this",
     ),
     (
         "ui.saveSwatchLibrary",
@@ -1196,6 +1202,7 @@ pub fn run_ui_command(app: &mut VectorcraftApp, id: &str, p: &Value) -> Option<R
         }
         "window.swatchLibrary" => crate::panels::swatches::open_library(app, p),
         "window.swatchLibrary.other" => crate::panels::swatches::other_library(app, s("path")),
+        "window.swatchLibrary.copyToUser" => crate::panels::swatches::copy_to_user(app, p),
         "ui.saveSwatchLibrary" => {
             let names = p.get("names").and_then(Value::as_array).map(|a| a.iter().filter_map(Value::as_str).map(str::to_string).collect());
             crate::dialogs::save_swatch_library::open(app, names.unwrap_or_default())
@@ -1845,6 +1852,7 @@ pub fn enabled(app: &VectorcraftApp, id: &str) -> bool {
         "ui.graphicStyleOptions" => app.session.active().is_some(),
         "ui.colorBalanceDialog" | "ui.saturateDialog" => app.session.active().is_some_and(|d| !d.selection.is_empty()),
         "ui.saveSwatchLibrary" => app.session.active().is_some(),
+        "window.swatchLibrary.copyToUser" => app.session.swatch_libraries.user_dir().is_some(),
         id if id.starts_with(crate::panels::swatches::USER_SLOT) => crate::panels::swatches::user_library(app, id).is_some(),
         "ui.flattenTransparencyDialog" => app.session.active().is_some_and(|d| !d.selection.is_empty()),
         "ui.saveGraphicStyleLibrary" => app.session.active().is_some(),

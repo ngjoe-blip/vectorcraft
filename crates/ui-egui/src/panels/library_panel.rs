@@ -669,4 +669,58 @@ mod tests {
         assert_eq!((lib.len(), lib.groups.len()), (4, 1));
         assert_eq!(app.session.documents().len(), 1, "not opened as a document");
     }
+
+    #[test]
+    fn a_library_from_another_folder_is_offered_a_copy_in_user_defined() {
+        let dir = std::env::temp_dir().join(format!("vc-library-copy-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let (user, elsewhere) = (dir.join("user"), dir.join("elsewhere"));
+        std::fs::create_dir_all(&elsewhere).unwrap();
+        let source = elsewhere.join("Brand.ase");
+        std::fs::write(&source, vectorcraft_testkit::ase::sample()).unwrap();
+        let source = source.to_string_lossy().to_string();
+        let mut app = app();
+        app.services.read = Some(Box::new(|p: &str| std::fs::read(p).map_err(|e| e.to_string())));
+        app.session.swatch_libraries.set_user_dir(Some(user.to_string_lossy().to_string()));
+        crate::io::open_path(&mut app, &source).unwrap();
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.clone()), Some(format!("loaded/{source}")));
+        let d = app.ui.dialog.as_ref().expect("opening it asks");
+        assert_eq!((d.kind.as_str(), d.str("__command").as_str()), (crate::dialogs::confirm::KIND, "window.swatchLibrary.copyToUser"));
+        assert_eq!(d.str("message"), "Copy “Brand” to the User Defined libraries?");
+        assert!(crate::menus::enabled(&app, "window.swatchLibrary.copyToUser"));
+        // A Color Guide limited to the loaded library is limited to the copy.
+        app.run("ui.colorGuideLimit", json!({ "library": format!("loaded/{source}") })).unwrap();
+        crate::dialogs::confirm(&mut app).unwrap();
+        assert!(app.ui.dialog.is_none());
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.as_str()), Some("user/Brand.ase"), "the panel shows the copy");
+        assert_eq!(std::fs::read(user.join("Brand.ase")).unwrap(), vectorcraft_testkit::ase::sample());
+        assert_eq!(app.ui.status, "Saved to User Defined: Brand");
+        assert_eq!(app.ui.color_guide_limit, "user/Brand.ase");
+        assert!(vectorcraft_engine::cmd::swatchlib::limit_palette(&app.session, &app.ui.color_guide_limit).is_some());
+        // A file of the User Defined folder opens as its User Defined library without a question.
+        crate::io::open_path(&mut app, &user.join("Brand.ase").to_string_lossy()).unwrap();
+        assert!(app.ui.dialog.is_none());
+        // So does the source, which has the same bytes.
+        app.run("window.swatchLibrary.other", json!({ "path": source })).unwrap();
+        assert!(app.ui.dialog.is_none());
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.as_str()), Some("user/Brand.ase"));
+        // Copying a User Defined library writes nothing, and the status bar reads Already in User Defined.
+        app.run("window.swatchLibrary.copyToUser", json!({ "library": "user/Brand.ase" })).unwrap();
+        assert_eq!(app.ui.status, "Already in User Defined: Brand");
+        // The app asks about a file with other bytes; Cancel keeps it loaded until the app quits.
+        let other = elsewhere.join("Other.ase");
+        let block = vectorcraft_testkit::ase::Block::Color("Only", b"RGB ", &[1.0, 0.0, 0.0], 2);
+        std::fs::write(&other, vectorcraft_testkit::ase::ase(&[block])).unwrap();
+        let other = other.to_string_lossy().to_string();
+        app.run("window.swatchLibrary.other", json!({ "path": other })).unwrap();
+        assert_eq!(app.ui.dialog.as_ref().map(|d| d.kind.as_str()), Some(crate::dialogs::confirm::KIND));
+        crate::dialogs::cancel(&mut app);
+        assert_eq!(app.ui.library_panel.as_ref().map(|o| o.id.clone()), Some(format!("loaded/{other}")));
+        // Without a User Defined folder (the web) nothing is asked, and the command is off.
+        app.session.swatch_libraries.set_user_dir(None);
+        crate::io::open_path(&mut app, &source).unwrap();
+        assert!(app.ui.dialog.is_none());
+        assert!(!crate::menus::enabled(&app, "window.swatchLibrary.copyToUser"));
+        let _ = std::fs::remove_dir_all(dir);
+    }
 }
