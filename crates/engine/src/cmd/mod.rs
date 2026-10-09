@@ -74,6 +74,7 @@ pub(crate) mod textwrap;
 pub(crate) mod threads;
 pub(crate) mod typecmd;
 mod typemenu;
+mod variablecmds;
 pub(crate) mod views;
 pub mod wand;
 pub mod webexport;
@@ -231,6 +232,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
         v.extend(maskedit::specs());
         v.extend(tabs::specs());
         v.extend(docmenu::specs());
+        v.extend(variablecmds::specs());
         v.extend(docinfo::specs());
         v.extend(panelcmds::specs());
         v.extend(buildcmds::specs());
